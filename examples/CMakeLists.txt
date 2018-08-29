@@ -1,34 +1,34 @@
 #
-#  _______ _    _ _____  _____     _____  _____                 
-# |__   __| |  | |_   _|/ ____|   |_   _|/ ____|       /\       
-#    | |  | |__| | | | | (___       | | | (___        /  \      
-#    | |  |  __  | | |  \___ \      | |  \___ \      / /\ \     
-#    | |  | |  | |_| |_ ____) |    _| |_ ____) |    / ____ \    
-#    |_|__|_|_ |_|_____|_____/__  |_____|_____/    /_/  _ \_\   
-#   |__   __| |  | |__   __/ __ \|  __ \|_   _|   /\   | |      
-#      | |  | |  | |  | | | |  | | |__) | | |    /  \  | |      
-#      | |  | |  | |  | | | |  | |  _  /  | |   / /\ \ | |      
-#      | |  | |__| |  | | | |__| | | \ \ _| |_ / ____ \| |____  
-#      |_|   \____/   |_|  \____/|_|  \_\_____/_/    \_\______| 
+#  _______ _    _ _____  _____     _____  _____
+# |__   __| |  | |_   _|/ ____|   |_   _|/ ____|       /\
+#    | |  | |__| | | | | (___       | | | (___        /  \
+#    | |  |  __  | | |  \___ \      | |  \___ \      / /\ \
+#    | |  | |  | |_| |_ ____) |    _| |_ ____) |    / ____ \
+#    |_|__|_|_ |_|_____|_____/__  |_____|_____/    /_/  _ \_\
+#   |__   __| |  | |__   __/ __ \|  __ \|_   _|   /\   | |
+#      | |  | |  | |  | | | |  | | |__) | | |    /  \  | |
+#      | |  | |  | |  | | | |  | |  _  /  | |   / /\ \ | |
+#      | |  | |__| |  | | | |__| | | \ \ _| |_ / ____ \| |____
+#      |_|   \____/   |_|  \____/|_|  \_\_____/_/    \_\______|
 #
 #
-#    _____  ______          _____      _______ _    _ ______       
-#   |  __ \|  ____|   /\   |  __ \    |__   __| |  | |  ____|      
-#   | |__) | |__     /  \  | |  | |      | |  | |__| | |__         
-#   |  _  /|  __|   / /\ \ | |  | |      | |  |  __  |  __|        
-#   | | \ \| |____ / ____ \| |__| |      | |  | |  | | |____       
-#   |_|__\_\______/_/_ __\_\_____/__ _   |_|__|_|_ |_|______|_ _ _ 
+#    _____  ______          _____      _______ _    _ ______
+#   |  __ \|  ____|   /\   |  __ \    |__   __| |  | |  ____|
+#   | |__) | |__     /  \  | |  | |      | |  | |__| | |__
+#   |  _  /|  __|   / /\ \ | |  | |      | |  |  __  |  __|
+#   | | \ \| |____ / ____ \| |__| |      | |  | |  | | |____
+#   |_|__\_\______/_/_ __\_\_____/__ _   |_|__|_|_ |_|______|_ _ _
 #  / ____/ __ \|  \/  |  \/  |  ____| \ | |__   __/ ____| | | | | |
 # | |   | |  | | \  / | \  / | |__  |  \| |  | | | (___   | | | | |
 # | |   | |  | | |\/| | |\/| |  __| | . ` |  | |  \___ \  | | | | |
 # | |___| |__| | |  | | |  | | |____| |\  |  | |  ____) | |_|_|_|_|
 #  \_____\____/|_|  |_|_|  |_|______|_| \_|  |_| |_____/  (_|_|_|_)
-#                                                                  
+#
 #
 #
 # This is a CMake makefile.  CMake is a tool that helps you build C++ programs.
 # You can download CMake from http://www.cmake.org.  This CMakeLists.txt file
-# you are reading builds dlib's example programs. 
+# you are reading builds dlib's example programs.
 #
 
 
@@ -48,10 +48,10 @@ add_subdirectory(../dlib dlib_build)
 # of the output executable and then a list of .cpp files to compile.  Here we
 # are going to compile one of the dlib example programs which has only one .cpp
 # file, assignment_learning_ex.cpp.  If your program consisted of multiple .cpp
-# files you would simply list them here in the add_executable() statement.  
+# files you would simply list them here in the add_executable() statement.
 add_executable(assignment_learning_ex assignment_learning_ex.cpp)
 # Finally, you need to tell CMake that this program, assignment_learning_ex,
-# depends on dlib.  You do that with this statement: 
+# depends on dlib.  You do that with this statement:
 target_link_libraries(assignment_learning_ex dlib::dlib)
 
 
@@ -106,6 +106,14 @@ macro(add_gui_example name)
    endif()
 endmacro()
 
+add_library(face_recognition SHARED face_recognition_c_lib.cpp)
+target_link_libraries(face_recognition PRIVATE dlib::dlib)
+#set_target_properties(face_recognition PROPERTIES
+#  LINK_FLAGS "-Wl,--whole-archive"
+#)
+
+
+
 # The deep learning toolkit requires a compiler with essentially complete C++11
 # support.  However, versions of Visual Studio prior to October 2016 didn't
 # provide enough C++11 support to compile the DNN tooling, but were good enough
@@ -121,7 +129,7 @@ endmacro()
 # THE COMPILER TO ONLY 2GB OF RAM, causing it to run out of RAM and crash when
 # compiling some of the DNN examples.  So generate your project with a statement
 # like this:
-#   cmake .. -G "Visual Studio 14 2015 Win64" -T host=x64 
+#   cmake .. -G "Visual Studio 14 2015 Win64" -T host=x64
 if (NOT USING_OLD_VISUAL_STUDIO_COMPILER)
    add_example(dnn_metric_learning_ex)
    add_gui_example(dnn_face_recognition_ex)
@@ -159,7 +167,7 @@ endif()
 
 
 
-#here we apply our macros 
+#here we apply our macros
 add_gui_example(3d_point_cloud_ex)
 add_example(bayes_net_ex)
 add_example(bayes_net_from_disk_ex)
