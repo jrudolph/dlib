@@ -8,6 +8,7 @@
 using namespace dlib;
 using namespace std;
 
+
 // ----------------------------------------------------------------------------------------
 
 // The next bit of code defines a ResNet network.  It's basically copied
@@ -49,29 +50,93 @@ using anet_type = loss_metric<fc_no_bias<128,avg_pool_everything<
                             input_rgb_image_sized<150>
                             >>>>>>>>>>>>;
 
+
+// ----------------------------------------------------------------------------------------
+
 // ----------------------------------------------------------------------------------------
 
 std::vector<matrix<rgb_pixel>> jitter_image(
-    const matrix<rgb_pixel>& img
-);
+    const matrix<rgb_pixel>& img,
+    const int numJitters = 100
+)
+{
+    // All this function does is make 100 copies of img, all slightly jittered by being
+    // zoomed, rotated, and translated a little bit differently. They are also randomly
+    // mirrored left to right.
+    thread_local dlib::rand rnd;
 
-// ----------------------------------------------------------------------------------------
-extern "C" void test() {
-  cout << "Hello World!";
+    std::vector<matrix<rgb_pixel>> crops;
+    for (int i = 0; i < numJitters; ++i)
+        crops.push_back(jitter_image(img,rnd));
+
+    return crops;
 }
 
+// ----------------------------------------------------------------------------------------
+
+
+
+// ----------------------------------------------------------------------------------------
 extern "C" {
 
 struct face {
-
+  long left;
+  long top;
+  long right;
+  long bottom;
+  float model[128];
 };
 
-int detect_faces(const char *imageFile, face** retFaces, int maxFaces) {
+int detect_faces(const char *imageFile, face* retFaces, int maxFaces) {
+    cout << "In detect_faces \n";
+    cout << "Loading detector\n";
     frontal_face_detector detector = get_frontal_face_detector();
+
+    cout << "Loading shape predictor\n";
+    shape_predictor sp;
+    deserialize("shape_predictor_5_face_landmarks.dat") >> sp;
+
+    cout << "Loading recognition model\n";
+    anet_type net;
+    deserialize("dlib_face_recognition_resnet_model_v1.dat") >> net;
+
     matrix<rgb_pixel> img;
+    cout << "Loading image\n";
     load_image(img, imageFile);
+    cout << "Running detector\n";
+    std::vector<rectangle> rects = detector(img);
 
-    return 0;
+    cout << "Found " << rects.size() << " faces\n" << std::flush;
+
+    for (auto rect : rects) {
+      cout << "Found one face at " << rect.left() << "\n";
+      retFaces->left = rect.left();
+      retFaces->top = rect.top();
+      retFaces->right = rect.right();
+      retFaces->bottom = rect.bottom();
+
+      cout << "Running shape predictor\n";
+      auto shape = sp(img, rect);
+      matrix<rgb_pixel> face_chip;
+      extract_image_chip(img, get_face_chip_details(shape,150,0.25), face_chip);
+
+      cout << "Jittering\n";
+      auto jittered = jitter_image(face_chip);
+
+      cout << "Recognizing\n";
+      matrix<float,0,1> rec = mean(mat(net(jittered)));
+
+      cout << "Result: " << rec << "\n";
+
+      for (int i = 0; i < 128; i++)
+        retFaces->model[i] = rec(i);
+      // TODO: check that we don't exceed maxFaces
+
+      retFaces++;
+    }
+
+    return rects.size();
 }
 
 }
+
