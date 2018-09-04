@@ -140,7 +140,7 @@ int detect_faces(const char *imageFile, face* retFaces, int maxFaces, int numJit
         return faces;
     } catch (std::exception e) {
         cout << "[WARN] Exception occurred during processing of " << imageFile << ": " << e.what() << "\n" << std::flush;
-        return 0;
+        return -1;
     }
 }
 
