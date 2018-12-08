@@ -89,46 +89,46 @@ struct face {
 
 int detect_faces(const char *imageFile, face* retFaces, int maxFaces, int numJitters) {
     try {
-        cout << "In detect_faces \n";
-        cout << "Loading detector\n";
+        //cout << "In detect_faces \n";
+        //cout << "Loading detector\n";
         frontal_face_detector detector = get_frontal_face_detector();
 
-        cout << "Loading shape predictor\n";
+        //cout << "Loading shape predictor\n";
         shape_predictor sp;
         deserialize("shape_predictor_5_face_landmarks.dat") >> sp;
 
-        cout << "Loading recognition model\n";
+        //cout << "Loading recognition model\n";
         anet_type net;
         deserialize("dlib_face_recognition_resnet_model_v1.dat") >> net;
 
         matrix<rgb_pixel> img;
-        cout << "Loading image\n";
+        //cout << "Loading image\n";
         load_image(img, imageFile);
-        cout << "Running detector\n";
+        //cout << "Running detector\n";
         std::vector<rectangle> rects = detector(img);
 
-        cout << "Found " << rects.size() << " faces\n" << std::flush;
+        //cout << "Found " << rects.size() << " faces\n" << std::flush;
         int faces = 0;
 
         for (auto rect : rects) {
-          cout << "Found one face at " << rect.left() << " " << rect.top() << " " << rect.right() << " " << rect.bottom() << "\n";
+          //cout << "Found one face at " << rect.left() << " " << rect.top() << " " << rect.right() << " " << rect.bottom() << "\n";
           retFaces->left = rect.left();
           retFaces->top = rect.top();
           retFaces->right = rect.right();
           retFaces->bottom = rect.bottom();
 
-          cout << "Running shape predictor\n";
+          //cout << "Running shape predictor\n";
           auto shape = sp(img, rect);
           matrix<rgb_pixel> face_chip;
           extract_image_chip(img, get_face_chip_details(shape,150,0.25), face_chip);
 
-          cout << "Jittering\n";
+          //cout << "Jittering\n";
           auto jittered = jitter_image(face_chip, numJitters);
 
-          cout << "Recognizing\n";
+          //cout << "Recognizing\n";
           matrix<float,0,1> rec = mean(mat(net(jittered)));
 
-          cout << "Result: " << rec << "\n" << std::flush;
+          //cout << "Result: " << rec << "\n" << std::flush;
 
           for (int i = 0; i < 128; i++)
             retFaces->model[i] = rec(i);
